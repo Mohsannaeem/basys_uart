@@ -1,0 +1,8 @@
+ Vivado Version being used : 2018.3
+ To Reproduce the Vivado project please follow following steps 
+       1 -> Open Vivado 
+       2 -> In toolbar -> Windows -> Tcl_Console
+       3 cd to this project repo
+       4 source ./uart_fifo.tcl
+
+       That's it ! Enjoy Your Simulation 
