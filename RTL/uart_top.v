@@ -9,7 +9,7 @@ module uart_top(
     output reg[31:0] data_o   // Agent Read Data
     );
     // Data to transmit.
-    wire [7:0]  RxData;
+    wire [7:0]  RxData1;
     wire [7:0]  TxData;
     reg         cntr_wr_in;
     wire [31:0] s_c_dc_in;
@@ -20,13 +20,13 @@ module uart_top(
     wire        fifo_rx_rd_en;
     wire [10:0] fifo_tx_status;
     wire [10:0] fifo_rx_status;
-    reg [31:0]  fifo_rx_out;
+    wire [7:0]  fifo_rx_out;
    // Write Enable DEMUX Implementation 
    always @(*) begin 
     if(reg_sel_i ==0) 
        data_o <= cntr_data_out ;  // Write Data out from Contol registers file
     else
-        data_o <= fifo_rx_out;
+        data_o <= {24'd0,fifo_rx_out};
        
    end
 // Read Data Mux Implementation
@@ -36,13 +36,6 @@ module uart_top(
     else 
         fifo_wr_in <= wr_i;    
    end 
-//Data Register
-always @(posedge Clk or negedge Rst_n) begin 
-    if(~Rst_n)
-       fifo_rx_out <= 32'h0;
-    else
-       fifo_rx_out <= {24'h0,RxData};
-end
 //Control Register Declaration
 control_registers i_control_registers (
   .clk      (Clk        ),
@@ -66,10 +59,10 @@ fifo_generator_0 fifo_tx(
 //RX FIFO Instansiations
 fifo_generator_0 fifo_rx(
   .clk(Clk),                // input wire clk
-  .din(data_i[7:0]),                // input wire [7 : 0] din
+  .din(RxData1),                // input wire [7 : 0] din
   .wr_en(fifo_rx_wr_en),            // input wire wr_en
   .rd_en(fifo_rx_rd_en),            // input wire rd_en
-  .dout(RxData),              // output wire [7 : 0] dout
+  .dout(fifo_rx_out),              // output wire [7 : 0] dout
   .full(fifo_rx_status[0]),              // output wire full
   .empty(fifo_rx_status[1]),            // output wire empty
   .data_count(fifo_rx_status[10:2])  // output wire [8 : 0] data_count
@@ -82,7 +75,7 @@ uart_control uart_cntl(
     .fifo_tx_status(fifo_tx_status),
     .fifo_rx_status(fifo_rx_status),
     .tx_data(TxData),
-    .rx_data(RxData),
+    .rx_data(RxData1),
     .tx_fifo_rd(fifo_tx_rd_en),
     .rx_fifo_rd(fifo_rx_rd_en),
     .rx_fifo_wr(fifo_rx_wr_en),
